@@ -1,0 +1,133 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:15
+    container_name: db
+    environment:
+      POSTGRES_USER: packetuser
+      POSTGRES_PASSWORD: packetpass
+      POSTGRES_DB: packetdb
+    ports:
+      - "5432:5432"
+    networks:
+      - packet-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U packetuser -d packetdb"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"
+    networks:
+      - packet-net
+    depends_on:
+      db:
+        condition: service_healthy
+
+  persistor-service:
+    image: ${DOCKERHUB_USER}/persistor-service:latest
+    container_name: persistor-service
+    environment:
+      SERVICE_PORT: 5002
+      DATABASE_URL: "postgresql://packetuser:packetpass@db:5432/packetdb"
+    ports:
+      - "5002:5002"
+    networks:
+      - packet-net
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "python3 -c 'import urllib.request; exit(0) if urllib.request.urlopen(\"http://localhost:5002/health\").read().decode() == \"OK\" else exit(1)'"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  parser-service:
+    image: ${DOCKERHUB_USER}/parser-service:latest
+    container_name: parser-service
+    environment:
+      SERVICE_PORT: 5001
+      DATABASE_URL: "postgresql://packetuser:packetpass@db:5432/packetdb"
+    ports:
+      - "5001:5001"
+    networks:
+      - packet-net
+    depends_on:
+      persistor-service:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "python3 -c 'import urllib.request; exit(0) if urllib.request.urlopen(\"http://localhost:5001/health\").read().decode() == \"OK\" else exit(1)'"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  analyzer-service:
+    image: ${DOCKERHUB_USER}/analyzer-service:latest
+    container_name: analyzer-service
+    environment:
+      SERVICE_PORT: 5003
+      DATABASE_URL: "postgresql://packetuser:packetpass@db:5432/packetdb"
+    ports:
+      - "5003:5003"
+    networks:
+      - packet-net
+    depends_on:
+      parser-service:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "python3 -c 'import urllib.request; exit(0) if urllib.request.urlopen(\"http://localhost:5003/health\").read().decode() else exit(1)'"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  ui-service:
+    image: ${DOCKERHUB_USER}/ui-service:latest
+    container_name: ui-service
+    environment:
+      SERVICE_PORT: 5000
+    ports:
+      - "5000:5000"
+    networks:
+      - packet-net
+    depends_on:
+      analyzer-service:
+        condition: service_healthy
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    healthcheck:
+      test: ["CMD-SHELL", "python3 -c 'import urllib.request; exit(0) if urllib.request.urlopen(\"http://localhost:5000\").read().decode() else exit(1)'"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  capture-service:
+    image: ${DOCKERHUB_USER}/capture-service:latest
+    container_name: capture-service
+    environment:
+      SERVICE_PORT: 5004
+      IFACE: ens5   # match your EC2 NIC
+    network_mode: "host"   # ✅ critical for sniffing
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    restart: always
+    depends_on:
+      parser-service:
+        condition: service_started
+
+networks:
+  packet-net:
+    driver: bridge
