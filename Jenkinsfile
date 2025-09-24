@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     parameters {
-        string(name: 'DOCKERHUB_USER', defaultValue: 'vivekgshan', description: 'Docker Hub username')
+        string(name: 'DOCKERHUB_USER', defaultValue: 'aragondadinesh', description: 'Docker Hub username')
         choice(name: 'STOP_CONTAINERS', choices: ['no', 'yes'], description: 'Stop and remove running containers?')
         choice(name: 'REMOVE_IMAGES', choices: ['no', 'yes'], description: 'Remove Docker images?')
         string(name: 'GIT_URL', defaultValue: 'https://github.com/vivekgshan/packet-analyzer.git', description: 'Git repository URL')
