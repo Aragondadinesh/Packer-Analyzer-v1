@@ -6,7 +6,7 @@ pipeline {
         choice(name: 'STOP_CONTAINERS', choices: ['no', 'yes'], description: 'Stop and remove running containers?')
         choice(name: 'REMOVE_IMAGES', choices: ['no', 'yes'], description: 'Remove Docker images?')
         string(name: 'GIT_URL', defaultValue: 'https://github.com/Aragondadinesh/Packer-Analyzer-v1.git', description: 'Git repository URL')
-        string(name: 'GIT_BRANCH', defaultValue: 'Docker-features-Suhanson', description: 'Git branch to checkout')
+        string(name: 'GIT_BRANCH', defaultValue: 'main', description: 'Git branch to checkout')
     }
 
     environment {
