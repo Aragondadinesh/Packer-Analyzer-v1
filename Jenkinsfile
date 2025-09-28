@@ -100,9 +100,20 @@ pipeline {
                         #docker-compose build --no-cache
                         #docker-compose pull || true
                         #docker-compose up -d --remove-orphans
+                        #echo "📦 Building all Docker images (no-cache)..."
+                        #docker-compose build --no-cache
+                        #echo "🚀 Deploying services..."
+                        #docker-compose up -d --remove-orphans
+                        echo "⏹ Stopping all containers and removing old volumes..."
+                        docker-compose down -v --remove-orphans || true
+
+                        echo "🗑 Cleaning up old images..."
+                        docker image prune -af || true
+
                         echo "📦 Building all Docker images (no-cache)..."
                         docker-compose build --no-cache
-                        echo "🚀 Deploying services..."
+
+                        echo "🚀 Starting fresh deployment..."
                         docker-compose up -d --remove-orphans
                     '''
                 }
