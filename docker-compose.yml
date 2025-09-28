@@ -1,0 +1,42 @@
+version: "3.9"
+services:
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: packets_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports: ["5432:5432"]
+    healthcheck:
+      test: ["CMD-SHELL","pg_isready -U postgres"]
+      interval: 2s
+      retries: 10
+
+  persistor-service:
+    build: ./persistor-service
+    depends_on:
+      postgres: {condition: service_healthy}
+    ports: ["8002:8002"]
+
+  parser-service:
+    build: ./parser-service
+    depends_on:
+      persistor-service: {condition: service_started}
+    ports: ["8001:8001"]
+
+  analyzer-service:
+    build: ./analyzer-service
+    depends_on:
+      persistor-service: {condition: service_started}
+    ports: ["8003:8003"]
+
+  capture-service:
+    build: ./capture-service
+    depends_on:
+      parser-service: {condition: service_started}
+
+  ui:
+    build: ./ui
+    ports: ["3000:80"]
+    depends_on:
+      analyzer-service: {condition: service_started}
