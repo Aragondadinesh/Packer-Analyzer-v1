@@ -96,8 +96,13 @@ pipeline {
             steps {
                 script {
                     sh '''
-                        echo "🚀 Deploying services with Docker Compose..."
-                        docker-compose pull || true
+                        #echo "🚀 Deploying services with Docker Compose..."
+                        #docker-compose build --no-cache
+                        #docker-compose pull || true
+                        #docker-compose up -d --remove-orphans
+                        echo "📦 Building all Docker images (no-cache)..."
+                        docker-compose build --no-cache
+                        echo "🚀 Deploying services..."
                         docker-compose up -d --remove-orphans
                     '''
                 }
