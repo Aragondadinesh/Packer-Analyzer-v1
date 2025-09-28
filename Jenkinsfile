@@ -83,7 +83,8 @@ pipeline {
                     for (srv in services) {
                         sh """
                             echo "📦 Building and pushing image: $DOCKERHUB_USER/${srv}:${IMAGE_TAG}"
-                            docker build -t $DOCKERHUB_USER/${srv}:${IMAGE_TAG} -f ${srv} .
+                            #docker build -t $DOCKERHUB_USER/${srv}:${IMAGE_TAG} -f ${srv} .
+                            docker build -t $DOCKERHUB_USER/$srv:$IMAGE_TAG $srv
                             docker push $DOCKERHUB_USER/${srv}:${IMAGE_TAG}
                         """
                     }
