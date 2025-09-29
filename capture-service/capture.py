@@ -1,7 +1,8 @@
 from scapy.all import sniff, IP, TCP, UDP, ICMP
 import requests, json
 
-PARSER_URL = "http://parser-service:8001/parse"
+#PARSER_URL = "http://parser-service:8001/parse"
+PARSER_URL = "http://127.0.0.1:8001/parse"
 
 def process_packet(packet):
     try:
