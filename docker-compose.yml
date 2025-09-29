@@ -33,7 +33,11 @@ services:
   capture-service:
     build: ./capture-service
     depends_on:
-      parser-service: {condition: service_started}
+      - parser-service
+    network_mode: "host"   # 👈 allows access to real network interface
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
 
   ui:
     build: ./ui
