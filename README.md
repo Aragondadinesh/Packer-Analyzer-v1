@@ -23,9 +23,9 @@ The system follows a modular pipeline where each service has a single responsibi
 
     •	Reads data from PostgreSQL
     •	Exposes REST APIs for analysis:
-    o	/protocol_summary → aggregated statistics by protocol
-    o	/packets → list of packets
-    o	/filter → filter packets by protocol, IP, etc.
+    •	/protocol_summary → aggregated statistics by protocol
+    •	/packets → list of packets
+    •	/filter → filter packets by protocol, IP, etc.
 
 **UI Service** 
 
